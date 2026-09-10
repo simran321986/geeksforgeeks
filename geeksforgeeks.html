@@ -1,0 +1,1630 @@
+ <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Editable Chess Board</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* ================= CONTAINER ================= */
+
+        .container {
+            width: 850px;
+            max-width: 95%;
+
+            background-color: white;
+
+            padding: 35px 40px 40px;
+
+            border-radius: 8px;
+
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+            position: relative;
+
+            text-align: center;
+        }
+
+        /* ================= HEADING ================= */
+
+        .heading {
+            font-family: Georgia, serif;
+
+            font-size: 45px;
+
+            color: #555;
+
+            margin-bottom: 20px;
+        }
+
+        /* ================= CLOSE BUTTON ================= */
+
+        .close-btn {
+            position: absolute;
+
+            top: 0;
+            right: 0;
+
+            width: 55px;
+            height: 55px;
+
+            border-radius: 50%;
+
+            background-color: #777;
+
+            color: white;
+
+            font-size: 32px;
+
+            border: none;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background-color: #555;
+        }
+
+        /* ================= EDIT BUTTON ================= */
+
+        .edit-btn {
+            position: absolute;
+
+            top: 15px;
+            left: 15px;
+
+            padding: 9px 17px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            background-color: #2878d7;
+
+            color: white;
+
+            font-size: 15px;
+
+            cursor: pointer;
+        }
+
+        .edit-btn:hover {
+            background-color: #185ca9;
+        }
+
+        /* ================= CHESS AREA ================= */
+
+        .chess-area {
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+        }
+
+        /* ================= COORDINATES ================= */
+
+        .left-coordinates,
+        .right-coordinates {
+
+            width: 25px;
+
+            height: 600px;
+
+            display: grid;
+
+            grid-template-rows: repeat(8, 1fr);
+
+            font-weight: bold;
+
+            color: #555;
+        }
+
+        .left-coordinates div,
+        .right-coordinates div {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        /* ================= BOARD WRAPPER ================= */
+
+        .board-wrapper {
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+        /* ================= CHESS BOARD ================= */
+
+        .chess-board {
+
+            width: 600px;
+
+            height: 600px;
+
+            display: grid;
+
+            grid-template-columns: repeat(8, 1fr);
+
+            grid-template-rows: repeat(8, 1fr);
+
+            border: 3px solid #555;
+        }
+
+        /* ================= SQUARE ================= */
+
+        .square {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            position: relative;
+
+            cursor: pointer;
+        }
+
+        .white {
+            background-color: #f5f5f5;
+        }
+
+        .black {
+            background-color: #777;
+        }
+
+        /* ================= PIECES ================= */
+
+        .piece {
+
+            font-size: 55px;
+
+            cursor: grab;
+
+            user-select: none;
+
+            line-height: 1;
+        }
+
+        .piece:active {
+            cursor: grabbing;
+        }
+
+        .white-piece {
+
+            color: white;
+
+            text-shadow:
+                0 0 2px black,
+                1px 1px 2px black,
+                -1px -1px 2px black;
+        }
+
+        .black-piece {
+
+            color: #222;
+
+            text-shadow:
+                0 1px 1px white;
+        }
+
+        /* Selected piece */
+
+        .selected {
+
+            box-shadow:
+                inset 0 0 0 5px #f1c40f;
+        }
+
+        /* ================= COORDINATES BOTTOM ================= */
+
+        .bottom-coordinates {
+
+            height: 25px;
+
+            display: grid;
+
+            grid-template-columns: repeat(8, 1fr);
+
+            font-weight: bold;
+
+            color: #555;
+        }
+
+        .bottom-coordinates div {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        /* ================= GAME INFO ================= */
+
+        .game-info {
+
+            margin-top: 18px;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            color: #444;
+        }
+
+        /* ================= RESET GAME ================= */
+
+        .reset-btn {
+
+            margin-top: 12px;
+
+            padding: 9px 20px;
+
+            border: none;
+
+            border-radius: 5px;
+
+            background-color: #555;
+
+            color: white;
+
+            cursor: pointer;
+        }
+
+        /* ================= EDIT PANEL ================= */
+
+        .edit-panel {
+
+            display: none;
+
+            margin-top: 25px;
+
+            padding: 22px;
+
+            background-color: #f4f4f4;
+
+            border-radius: 8px;
+
+            text-align: left;
+
+            border: 1px solid #ddd;
+        }
+
+        .edit-panel h2 {
+
+            text-align: center;
+
+            margin-bottom: 20px;
+
+            color: #333;
+        }
+
+        /* Each option */
+
+        .edit-option {
+
+            margin-bottom: 15px;
+        }
+
+        .edit-option label {
+
+            display: block;
+
+            margin-bottom: 6px;
+
+            font-weight: bold;
+
+            color: #444;
+        }
+
+        .edit-option input[type="text"] {
+
+            width: 100%;
+
+            padding: 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 5px;
+
+            font-size: 15px;
+        }
+
+        .edit-option input[type="number"] {
+
+            width: 100%;
+
+            padding: 9px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 5px;
+
+            font-size: 15px;
+        }
+
+        .edit-option input[type="color"] {
+
+            width: 65px;
+
+            height: 40px;
+
+            border: none;
+
+            cursor: pointer;
+        }
+
+        /* Range */
+
+        .edit-option input[type="range"] {
+
+            width: 100%;
+
+            cursor: pointer;
+        }
+
+        /* Select */
+
+        .edit-option select {
+
+            width: 100%;
+
+            padding: 9px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 5px;
+        }
+
+        /* Checkbox */
+
+        .checkbox-option {
+
+            display: flex !important;
+
+            align-items: center;
+
+            gap: 10px;
+
+            cursor: pointer;
+        }
+
+        .checkbox-option input {
+
+            width: 18px;
+
+            height: 18px;
+        }
+
+        /* Apply */
+
+        .apply-btn {
+
+            width: 100%;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            background-color: #27ae60;
+
+            color: white;
+
+            font-size: 16px;
+
+            cursor: pointer;
+        }
+
+        .apply-btn:hover {
+
+            background-color: #1e8449;
+        }
+
+        /* Reset Design */
+
+        .reset-design {
+
+            width: 100%;
+
+            padding: 10px;
+
+            margin-top: 10px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            background-color: #e74c3c;
+
+            color: white;
+
+            cursor: pointer;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 700px) {
+
+            .container {
+
+                padding: 25px 10px 30px;
+            }
+
+            .heading {
+
+                font-size: 32px;
+            }
+
+            .chess-board {
+
+                width: 90vw;
+
+                height: 90vw;
+            }
+
+            .left-coordinates,
+            .right-coordinates {
+
+                height: 90vw;
+
+                width: 18px;
+            }
+
+            .piece {
+
+                font-size: 8vw;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+    <!-- EDIT BUTTON -->
+
+    <button class="edit-btn" onclick="toggleEditor()">
+        ✏️ Edit
+    </button>
+
+
+    <!-- CLOSE BUTTON -->
+
+    <button class="close-btn" onclick="closeBox()">
+        ×
+    </button>
+
+
+    <!-- HEADING -->
+
+    <div class="heading" id="heading">
+        GeeksforGeeks
+    </div>
+
+
+    <!-- ================= CHESS BOARD ================= -->
+
+    <div class="chess-area">
+
+
+        <!-- LEFT NUMBERS -->
+
+        <div class="left-coordinates" id="leftNumbers">
+
+            <div>8</div>
+            <div>7</div>
+            <div>6</div>
+            <div>5</div>
+            <div>4</div>
+            <div>3</div>
+            <div>2</div>
+            <div>1</div>
+
+        </div>
+
+
+        <div class="board-wrapper">
+
+
+            <!-- BOARD -->
+
+            <div class="chess-board" id="chessBoard">
+
+            </div>
+
+
+            <!-- BOTTOM LETTERS -->
+
+            <div class="bottom-coordinates" id="letters">
+
+                <div>A</div>
+                <div>B</div>
+                <div>C</div>
+                <div>D</div>
+                <div>E</div>
+                <div>F</div>
+                <div>G</div>
+                <div>H</div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- RIGHT NUMBERS -->
+
+        <div class="right-coordinates" id="rightNumbers">
+
+            <div>8</div>
+            <div>7</div>
+            <div>6</div>
+            <div>5</div>
+            <div>4</div>
+            <div>3</div>
+            <div>2</div>
+            <div>1</div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- GAME STATUS -->
+
+    <div class="game-info" id="gameInfo">
+        White's Turn
+    </div>
+
+
+    <button class="reset-btn" onclick="resetGame()">
+        Reset Game
+    </button>
+
+
+    <!-- ================= EDIT PANEL ================= -->
+
+    <div class="edit-panel" id="editPanel">
+
+        <h2>⚙️ Edit Chess Board</h2>
+
+
+        <!-- TEXT -->
+
+        <div class="edit-option">
+
+            <label>
+                Heading Text
+            </label>
+
+            <input
+                type="text"
+                id="headingInput"
+                value="GeeksforGeeks"
+            >
+
+        </div>
+
+
+        <!-- HEADING COLOR -->
+
+        <div class="edit-option">
+
+            <label>
+                Heading Color
+            </label>
+
+            <input
+                type="color"
+                id="headingColor"
+                value="#555555"
+            >
+
+        </div>
+
+
+        <!-- HEADING SIZE -->
+
+        <div class="edit-option">
+
+            <label>
+                Heading Font Size
+            </label>
+
+            <input
+                type="range"
+                id="headingSize"
+                min="20"
+                max="80"
+                value="45"
+            >
+
+        </div>
+
+
+        <!-- WHITE SQUARE -->
+
+        <div class="edit-option">
+
+            <label>
+                White Square Color
+            </label>
+
+            <input
+                type="color"
+                id="whiteColor"
+                value="#f5f5f5"
+            >
+
+        </div>
+
+
+        <!-- BLACK SQUARE -->
+
+        <div class="edit-option">
+
+            <label>
+                Black Square Color
+            </label>
+
+            <input
+                type="color"
+                id="blackColor"
+                value="#777777"
+            >
+
+        </div>
+
+
+        <!-- BOARD BORDER -->
+
+        <div class="edit-option">
+
+            <label>
+                Board Border Color
+            </label>
+
+            <input
+                type="color"
+                id="borderColor"
+                value="#555555"
+            >
+
+        </div>
+
+
+        <!-- BOARD SIZE -->
+
+        <div class="edit-option">
+
+            <label>
+                Board Size
+            </label>
+
+            <input
+                type="range"
+                id="boardSize"
+                min="300"
+                max="700"
+                value="600"
+            >
+
+        </div>
+
+
+        <!-- PIECE SIZE -->
+
+        <div class="edit-option">
+
+            <label>
+                Chess Piece Size
+            </label>
+
+            <input
+                type="range"
+                id="pieceSize"
+                min="25"
+                max="80"
+                value="55"
+            >
+
+        </div>
+
+
+        <!-- PAGE BACKGROUND -->
+
+        <div class="edit-option">
+
+            <label>
+                Page Background Color
+            </label>
+
+            <input
+                type="color"
+                id="pageColor"
+                value="#f0f2f5"
+            >
+
+        </div>
+
+
+        <!-- CONTAINER COLOR -->
+
+        <div class="edit-option">
+
+            <label>
+                Container Background Color
+            </label>
+
+            <input
+                type="color"
+                id="containerColor"
+                value="#ffffff"
+            >
+
+        </div>
+
+
+        <!-- CONTAINER WIDTH -->
+
+        <div class="edit-option">
+
+            <label>
+                Container Width
+            </label>
+
+            <input
+                type="range"
+                id="containerWidth"
+                min="650"
+                max="1100"
+                value="850"
+            >
+
+        </div>
+
+
+        <!-- BORDER RADIUS -->
+
+        <div class="edit-option">
+
+            <label>
+                Container Border Radius
+            </label>
+
+            <input
+                type="range"
+                id="borderRadius"
+                min="0"
+                max="40"
+                value="8"
+            >
+
+        </div>
+
+
+        <!-- COORDINATES -->
+
+        <div class="edit-option">
+
+            <label class="checkbox-option">
+
+                <input
+                    type="checkbox"
+                    id="coordinates"
+                    checked
+                >
+
+                Show Board Coordinates
+
+            </label>
+
+        </div>
+
+
+        <!-- APPLY -->
+
+        <button class="apply-btn" onclick="applyChanges()">
+            ✓ Apply Changes
+        </button>
+
+
+        <!-- RESET DESIGN -->
+
+        <button
+            class="reset-design"
+            onclick="resetDesign()">
+
+            ↩ Reset Design
+
+        </button>
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+/* =====================================================
+   CHESS BOARD
+===================================================== */
+
+
+const startingPosition = [
+
+    ["♜","♞","♝","♛","♚","♝","♞","♜"],
+
+    ["♟","♟","♟","♟","♟","♟","♟","♟"],
+
+    ["","","","","","","",""],
+
+    ["","","","","","","",""],
+
+    ["","","","","","","",""],
+
+    ["","","","","","","",""],
+
+    ["♙","♙","♙","♙","♙","♙","♙","♙"],
+
+    ["♖","♘","♗","♕","♔","♗","♘","♖"]
+
+];
+
+
+let board = [];
+
+let selectedSquare = null;
+
+let currentPlayer = "white";
+
+
+/* =====================================================
+   CREATE BOARD
+===================================================== */
+
+function createBoard() {
+
+    board = startingPosition.map(row => [...row]);
+
+    currentPlayer = "white";
+
+    selectedSquare = null;
+
+    renderBoard();
+
+    document.getElementById("gameInfo").innerText =
+        "White's Turn";
+}
+
+
+/* =====================================================
+   RENDER BOARD
+===================================================== */
+
+function renderBoard() {
+
+    const chessBoard =
+        document.getElementById("chessBoard");
+
+    chessBoard.innerHTML = "";
+
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            const square =
+                document.createElement("div");
+
+
+            square.classList.add("square");
+
+
+            if ((row + col) % 2 === 0) {
+
+                square.classList.add("white");
+
+            } else {
+
+                square.classList.add("black");
+
+            }
+
+
+            square.dataset.row = row;
+
+            square.dataset.col = col;
+
+
+            const piece = board[row][col];
+
+
+            /* ================= PIECE ================= */
+
+            if (piece !== "") {
+
+                const pieceElement =
+                    document.createElement("div");
+
+
+                pieceElement.classList.add("piece");
+
+
+                if ("♜♞♝♛♚♟".includes(piece)) {
+
+                    pieceElement.classList.add(
+                        "black-piece"
+                    );
+
+                } else {
+
+                    pieceElement.classList.add(
+                        "white-piece"
+                    );
+
+                }
+
+
+                pieceElement.innerText = piece;
+
+
+                /* DRAG */
+
+                pieceElement.draggable = true;
+
+
+                pieceElement.addEventListener(
+                    "dragstart",
+                    function () {
+
+                        const color =
+                            getPieceColor(piece);
+
+
+                        if (color !== currentPlayer) {
+
+                            return;
+                        }
+
+
+                        selectedSquare = {
+                            row: row,
+                            col: col
+                        };
+
+                    }
+                );
+
+
+                /* CLICK */
+
+                pieceElement.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.stopPropagation();
+
+
+                        const color =
+                            getPieceColor(piece);
+
+
+                        if (color !== currentPlayer) {
+
+                            return;
+                        }
+
+
+                        selectedSquare = {
+                            row: row,
+                            col: col
+                        };
+
+
+                        renderBoard();
+
+
+                        const squares =
+                            document.querySelectorAll(
+                                ".square"
+                            );
+
+
+                        const index =
+                            row * 8 + col;
+
+
+                        squares[index]
+                            .classList
+                            .add("selected");
+
+                    }
+                );
+
+
+                square.appendChild(pieceElement);
+
+            }
+
+
+            /* CLICK DESTINATION */
+
+            square.addEventListener(
+                "click",
+                function () {
+
+                    if (selectedSquare !== null) {
+
+                        movePiece(
+                            selectedSquare.row,
+                            selectedSquare.col,
+                            row,
+                            col
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /* DROP */
+
+            square.addEventListener(
+                "dragover",
+                function (event) {
+
+                    event.preventDefault();
+
+                }
+            );
+
+
+            square.addEventListener(
+                "drop",
+                function (event) {
+
+                    event.preventDefault();
+
+
+                    if (selectedSquare !== null) {
+
+                        movePiece(
+                            selectedSquare.row,
+                            selectedSquare.col,
+                            row,
+                            col
+                        );
+
+                    }
+
+                }
+            );
+
+
+            chessBoard.appendChild(square);
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   PIECE COLOR
+===================================================== */
+
+function getPieceColor(piece) {
+
+    if ("♜♞♝♛♚♟".includes(piece)) {
+
+        return "black";
+
+    }
+
+    return "white";
+}
+
+
+/* =====================================================
+   MOVE PIECE
+===================================================== */
+
+function movePiece(
+    fromRow,
+    fromCol,
+    toRow,
+    toCol
+) {
+
+    const piece =
+        board[fromRow][fromCol];
+
+
+    if (piece === "") {
+
+        return;
+    }
+
+
+    const pieceColor =
+        getPieceColor(piece);
+
+
+    /* Correct player's turn */
+
+    if (pieceColor !== currentPlayer) {
+
+        selectedSquare = null;
+
+        renderBoard();
+
+        return;
+    }
+
+
+    /* Own piece cannot be captured */
+
+    if (board[toRow][toCol] !== "") {
+
+        const destinationColor =
+            getPieceColor(board[toRow][toCol]);
+
+
+        if (destinationColor === currentPlayer) {
+
+            selectedSquare = null;
+
+            renderBoard();
+
+            return;
+        }
+
+    }
+
+
+    /* MOVE */
+
+    board[toRow][toCol] =
+        board[fromRow][fromCol];
+
+
+    board[fromRow][fromCol] = "";
+
+
+    /* CHANGE TURN */
+
+    if (currentPlayer === "white") {
+
+        currentPlayer = "black";
+
+        document.getElementById("gameInfo")
+            .innerText = "Black's Turn";
+
+    } else {
+
+        currentPlayer = "white";
+
+        document.getElementById("gameInfo")
+            .innerText = "White's Turn";
+    }
+
+
+    selectedSquare = null;
+
+
+    renderBoard();
+
+}
+
+
+/* =====================================================
+   RESET GAME
+===================================================== */
+
+function resetGame() {
+
+    createBoard();
+
+}
+
+
+/* =====================================================
+   EDIT PANEL
+===================================================== */
+
+function toggleEditor() {
+
+    const panel =
+        document.getElementById("editPanel");
+
+
+    if (panel.style.display === "block") {
+
+        panel.style.display = "none";
+
+    } else {
+
+        panel.style.display = "block";
+
+    }
+
+}
+
+
+/* =====================================================
+   APPLY EDITS
+===================================================== */
+
+function applyChanges() {
+
+
+    /* HEADING */
+
+    const heading =
+        document.getElementById("heading");
+
+
+    heading.innerText =
+        document.getElementById("headingInput").value;
+
+
+    /* HEADING COLOR */
+
+    heading.style.color =
+        document.getElementById("headingColor").value;
+
+
+    /* HEADING SIZE */
+
+    heading.style.fontSize =
+        document.getElementById("headingSize").value + "px";
+
+
+    /* WHITE SQUARE */
+
+    document.querySelectorAll(".white")
+        .forEach(square => {
+
+            square.style.backgroundColor =
+                document.getElementById(
+                    "whiteColor"
+                ).value;
+
+        });
+
+
+    /* BLACK SQUARE */
+
+    document.querySelectorAll(".black")
+        .forEach(square => {
+
+            square.style.backgroundColor =
+                document.getElementById(
+                    "blackColor"
+                ).value;
+
+        });
+
+
+    /* BOARD BORDER */
+
+    document.getElementById("chessBoard")
+        .style.borderColor =
+        document.getElementById(
+            "borderColor"
+        ).value;
+
+
+    /* BOARD SIZE */
+
+    const size =
+        document.getElementById("boardSize").value;
+
+
+    const chessBoard =
+        document.getElementById("chessBoard");
+
+
+    chessBoard.style.width =
+        size + "px";
+
+
+    chessBoard.style.height =
+        size + "px";
+
+
+    document.querySelector(
+        ".left-coordinates"
+    ).style.height = size + "px";
+
+
+    document.querySelector(
+        ".right-coordinates"
+    ).style.height = size + "px";
+
+
+    /* PIECE SIZE */
+
+    document.querySelectorAll(".piece")
+        .forEach(piece => {
+
+            piece.style.fontSize =
+                document.getElementById(
+                    "pieceSize"
+                ).value + "px";
+
+        });
+
+
+    /* PAGE COLOR */
+
+    document.body.style.backgroundColor =
+        document.getElementById(
+            "pageColor"
+        ).value;
+
+
+    /* CONTAINER COLOR */
+
+    document.querySelector(".container")
+        .style.backgroundColor =
+        document.getElementById(
+            "containerColor"
+        ).value;
+
+
+    /* CONTAINER WIDTH */
+
+    document.querySelector(".container")
+        .style.width =
+        document.getElementById(
+            "containerWidth"
+        ).value + "px";
+
+
+    /* BORDER RADIUS */
+
+    document.querySelector(".container")
+        .style.borderRadius =
+        document.getElementById(
+            "borderRadius"
+        ).value + "px";
+
+
+    /* COORDINATES */
+
+    const showCoordinates =
+        document.getElementById(
+            "coordinates"
+        ).checked;
+
+
+    document.getElementById(
+        "leftNumbers"
+    ).style.display =
+        showCoordinates ? "grid" : "none";
+
+
+    document.getElementById(
+        "rightNumbers"
+    ).style.display =
+        showCoordinates ? "grid" : "none";
+
+
+    document.getElementById(
+        "letters"
+    ).style.display =
+        showCoordinates ? "grid" : "none";
+
+}
+
+
+/* =====================================================
+   RESET DESIGN
+===================================================== */
+
+function resetDesign() {
+
+
+    document.getElementById(
+        "headingInput"
+    ).value = "GeeksforGeeks";
+
+
+    document.getElementById(
+        "headingColor"
+    ).value = "#555555";
+
+
+    document.getElementById(
+        "headingSize"
+    ).value = 45;
+
+
+    document.getElementById(
+        "whiteColor"
+    ).value = "#f5f5f5";
+
+
+    document.getElementById(
+        "blackColor"
+    ).value = "#777777";
+
+
+    document.getElementById(
+        "borderColor"
+    ).value = "#555555";
+
+
+    document.getElementById(
+        "boardSize"
+    ).value = 600;
+
+
+    document.getElementById(
+        "pieceSize"
+    ).value = 55;
+
+
+    document.getElementById(
+        "pageColor"
+    ).value = "#f0f2f5";
+
+
+    document.getElementById(
+        "containerColor"
+    ).value = "#ffffff";
+
+
+    document.getElementById(
+        "containerWidth"
+    ).value = 850;
+
+
+    document.getElementById(
+        "borderRadius"
+    ).value = 8;
+
+
+    document.getElementById(
+        "coordinates"
+    ).checked = true;
+
+
+    /* Apply default */
+
+    document.getElementById("heading")
+        .style = "";
+
+
+    document.getElementById("chessBoard")
+        .style.width = "600px";
+
+
+    document.getElementById("chessBoard")
+        .style.height = "600px";
+
+
+    document.getElementById("chessBoard")
+        .style.borderColor = "#555";
+
+
+    document.querySelector(".container")
+        .style.width = "850px";
+
+
+    document.querySelector(".container")
+        .style.backgroundColor = "white";
+
+
+    document.querySelector(".container")
+        .style.borderRadius = "8px";
+
+
+    document.body.style.backgroundColor =
+        "#f0f2f5";
+
+
+    document.querySelector(
+        ".left-coordinates"
+    ).style.height = "600px";
+
+
+    document.querySelector(
+        ".right-coordinates"
+    ).style.height = "600px";
+
+
+    document.getElementById(
+        "leftNumbers"
+    ).style.display = "grid";
+
+
+    document.getElementById(
+        "rightNumbers"
+    ).style.display = "grid";
+
+
+    document.getElementById(
+        "letters"
+    ).style.display = "grid";
+
+
+    renderBoard();
+
+}
+
+
+/* =====================================================
+   CLOSE
+===================================================== */
+
+function closeBox() {
+
+    document.querySelector(
+        ".container"
+    ).style.display = "none";
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+createBoard();
+
+</script>
+
+</body>
+
+</html>
